@@ -1,0 +1,350 @@
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Base de Conhecimento - Soluções de Atendimento</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- FontAwesome para ícones modernos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+    <!-- TELA DE IDENTIFICAÇÃO (LOGIN) COM EFEITO DE PARTÍCULAS -->
+    <div id="loginScreen" class="login-overlay">
+        <canvas id="particleCanvas"></canvas>
+
+        <div class="login-card">
+            <div class="login-icon">
+                <i class="fa-solid fa-book-bookmark"></i>
+            </div>
+            <h2>Bem-vindo(a)!</h2>
+            <p>Insira seu nome para acessar a base de conhecimento da equipe.</p>
+            
+            <div class="alert-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text">
+                    <strong>Aviso importante:</strong> Este conteúdo serve unicamente como apoio. <strong>Não devem ser incluídos dados de clientes, políticas ou diretrizes da empresa</strong>. O acesso a esta ferramenta nunca deve ser prioridade sobre o atendimento oficial. Sempre consulte as políticas oficiais, o suporte de floor, os TLs e siga rigorosamente o fluxo da ferramenta de atendimento.
+                </div>
+            </div>
+
+            <form id="loginForm">
+                <div class="input-group">
+                    <input type="text" id="userNameInput" placeholder="Digite seu nome completo..." required autocomplete="off">
+                </div>
+                <button type="submit" class="btn-primary">
+                    <span>Acessar Ferramenta</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- TELA DE CARREGAMENTO -->
+    <div id="loadingScreen" class="login-overlay app-hidden">
+        <canvas id="particleCanvasLoading"></canvas>
+
+        <div class="login-card loading-card">
+            <div class="loading-header-flex">
+                <h2>Carregando ambiente...</h2>
+                <span id="progressPercentage">0%</span>
+            </div>
+            <p>Por favor, leia atentamente as diretrizes abaixo antes de prosseguir.</p>
+            
+            <div class="alert-box">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text">
+                    <strong>Aviso importante:</strong> Este conteúdo serve unicamente como apoio. <strong>Não devem ser incluídos dados de clientes, políticas ou diretrizes da empresa</strong>. O acesso a esta ferramenta nunca deve ser prioridade sobre o atendimento oficial. Sempre consulte as políticas oficiais, o suporte de floor, os TLs e siga rigorosamente o fluxo da ferramenta de atendimento.
+                </div>
+            </div>
+
+            <div class="progress-bar-container">
+                <div id="progressBarFill" class="progress-bar-fill"></div>
+            </div>
+
+            <button id="btnEnterPlatform" class="btn-primary app-hidden animate-pop">
+                <span>Continuar para a Plataforma</span>
+                <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- TELA DE ESCOLHA (HUB CENTRAL) -->
+    <div id="hubScreen" class="app-hidden">
+        <header>
+            <div class="container header-flex">
+                <div class="header-title-wrapper">
+                    <div class="header-title">
+                        <h1><i class="fa-solid fa-book-bookmark"></i> Base de Conhecimento</h1>
+                        <p>Painel de Navegação Inicial</p>
+                    </div>
+                    <!-- Sino de Notificações no Hub -->
+                    <div class="notification-dropdown-container">
+                        <button id="btnHubNotificationBell" class="notification-bell-btn" title="Notificações de Novos Registros">
+                            <i class="fa-solid fa-bell"></i>
+                            <span id="hubNotificationBadge" class="notification-badge app-hidden">0</span>
+                        </button>
+                        <div id="hubNotificationDropdown" class="notification-dropdown app-hidden">
+                            <div class="notification-header">
+                                <span>Novas Soluções Aprovadas</span>
+                            </div>
+                            <div id="hubNotificationList" class="notification-list">
+                                <!-- Itens injetados via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-badge-container">
+                    <span class="user-badge">
+                        <i class="fa-solid fa-user-circle"></i> <span id="hubDisplayName">Usuário</span>
+                    </span>
+                    <button id="btnHubLogout" title="Sair / Trocar usuário" class="btn-icon">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <main class="container hub-main-container">
+            <div class="alert-box app-alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text">
+                    <strong>Lembrete de diretrizes:</strong> Este painel serve apenas como apoio prático e <strong>não deve conter dados de clientes, políticas ou diretrizes da empresa</strong>. Lembre-se que o uso desta ferramenta nunca é prioridade em detrimento do atendimento. Consulte sempre as políticas oficiais, o suporte de floor, os TLs e siga rigidamente o fluxo da ferramenta oficial.
+                </div>
+            </div>
+
+            <div class="hub-title-center">
+                <h2>Escolha uma das opções abaixo para começar:</h2>
+                <p>Gerencie seus próprios cadastros ou pesquise na base completa compartilhada.</p>
+            </div>
+
+            <div class="hub-cards-grid">
+                <div class="hub-card" id="cardMyRecords">
+                    <div class="hub-icon-wrapper left-accent">
+                        <i class="fa-solid fa-user-pen"></i>
+                    </div>
+                    <h3>Registros de Conhecimentos</h3>
+                    <p>Cadastre novas soluções e gerencie exclusivamente os registros criados por você.</p>
+                    <button class="btn-primary">Acessar Meus Registros <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <div class="hub-card" id="cardAllRecords">
+                    <div class="hub-icon-wrapper right-accent">
+                        <i class="fa-solid fa-globe"></i>
+                    </div>
+                    <h3>Visualizar Todos os Registros</h3>
+                    <p>Consulte e pesquise por palavra-chave todas as soluções aprovadas e lançadas na base.</p>
+                    <button class="btn-primary btn-secondary-theme">Ver Todos os Registros <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+            </div>
+
+            <div id="adminHubSection" class="admin-hub-section app-hidden">
+                <div class="admin-hub-divider">
+                    <span><i class="fa-solid fa-shield-halved"></i> Painel de Administração</span>
+                </div>
+                <div class="hub-cards-grid admin-grid-cards">
+                    <div class="hub-card admin-card-border" id="cardAdminReview">
+                        <div class="hub-icon-wrapper admin-accent">
+                            <i class="fa-solid fa-clipboard-check"></i>
+                        </div>
+                        <h3>Revisão de Registros</h3>
+                        <p>Verifique novos envios da equipe, certifique-se da ausência de dados de clientes e aprove-os.</p>
+                        <button class="btn-primary btn-admin-theme">Revisar Pendentes <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="hub-card admin-card-border" id="cardAdminDelete">
+                        <div class="hub-icon-wrapper danger-accent">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </div>
+                        <h3>Gerenciamento e Exclusão</h3>
+                        <p>Acesse a lista completa de registros para excluir itens incorretos ou obsoletos com segurança.</p>
+                        <button class="btn-primary btn-danger-theme">Gerenciar / Excluir <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="hub-footer">
+            <div class="container footer-content">
+                <p>&copy; 2026 Todos os direitos reservados. Desenvolvido por <strong>Alexsandro Alves Rodrigues</strong>.</p>
+            </div>
+        </footer>
+    </div>
+
+    <!-- APLICAÇÃO PRINCIPAL (VIEWS DE CONTEÚDO) -->
+    <div id="appContainer" class="app-hidden">
+        <header>
+            <div class="container header-flex">
+                <div class="header-title-wrapper">
+                    <div class="header-title">
+                        <h1 id="viewTitleHeader"><i class="fa-solid fa-book-bookmark"></i> Base de Conhecimento</h1>
+                        <p id="viewSubtitleHeader">Gerenciamento de registros</p>
+                    </div>
+                    <!-- Sino de Notificações nas Views Internas -->
+                    <div class="notification-dropdown-container">
+                        <button id="btnNotificationBell" class="notification-bell-btn" title="Notificações de Novos Registros">
+                            <i class="fa-solid fa-bell"></i>
+                            <span id="notificationBadge" class="notification-badge app-hidden">0</span>
+                        </button>
+                        <div id="notificationDropdown" class="notification-dropdown app-hidden">
+                            <div class="notification-header">
+                                <span>Novas Soluções Aprovadas</span>
+                            </div>
+                            <div id="notificationList" class="notification-list">
+                                <!-- Itens injetados via JS -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="header-right-group">
+                    <div class="live-clock-badge">
+                        <i class="fa-regular fa-clock"></i> <span id="liveClock">00:00:00</span>
+                    </div>
+                    <div class="user-badge-container">
+                        <button id="btnBackToHub" class="btn-secondary-action" title="Voltar ao Menu Principal">
+                            <i class="fa-solid fa-house"></i> Menu Principal
+                        </button>
+                        <span class="user-badge">
+                            <i class="fa-solid fa-user-circle"></i> <span id="displayName">Usuário</span>
+                        </span>
+                        <button id="btnLogout" title="Sair / Trocar usuário" class="btn-icon">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="alert-box app-alert">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+                <div class="alert-text">
+                    <strong>Lembrete de diretrizes:</strong> Este painel serve apenas como apoio prático e <strong>não deve conter dados de clientes, políticas ou diretrizes da empresa</strong>. Lembre-se que o uso desta ferramenta nunca é prioridade em detrimento do atendimento. Consulte sempre as políticas oficiais, o suporte de floor, os TLs e siga rigidamente o fluxo da ferramenta oficial.
+                </div>
+            </div>
+
+            <!-- VIEW 1: MEUS REGISTROS -->
+            <div id="myRecordsView" class="main-grid app-hidden">
+                <section class="card form-section">
+                    <h2><i class="fa-solid fa-circle-plus"></i> Nova Solução</h2>
+                    <form id="solutionForm">
+                        <div class="input-group">
+                            <label for="title">Título do Problema / Caso</label>
+                            <input type="text" id="title" placeholder="Ex: Erro ao redefinir senha no sistema" required>
+                        </div>
+                        <div class="input-group">
+                            <label for="category">Categoria / Setor</label>
+                            <input type="text" id="category" placeholder="Ex: Suporte Técnico, Financeiro..." required>
+                        </div>
+                        <div class="input-group">
+                            <label for="description">Descrição do Problema <small style="color: #ef4444; font-weight: normal;">(Sem dados de clientes)</small></label>
+                            <textarea id="description" rows="3" placeholder="Resuma qual era a dificuldade..." required></textarea>
+                        </div>
+                        <div class="input-group">
+                            <label for="solution">Ação Resolutiva (O que deu certo?)</label>
+                            <textarea id="solution" rows="4" placeholder="Descreva o passo a passo..." required></textarea>
+                        </div>
+                        <button type="submit" id="btnSubmitSolution" class="btn-primary">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Solução
+                        </button>
+                    </form>
+                </section>
+
+                <section class="list-section">
+                    <div class="list-header">
+                        <h2><i class="fa-solid fa-list-check"></i> Meus Registros Cadastrados</h2>
+                    </div>
+                    <div class="search-box">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <input type="text" id="searchMyInput" placeholder="Pesquisar nos meus registros...">
+                    </div>
+                    <div id="mySolutionsContainer" class="solutions-grid"></div>
+                </section>
+            </div>
+
+            <!-- VIEW 2: VISUALIZAR TODOS OS REGISTROS -->
+            <div id="allRecordsView" class="list-section-full app-hidden">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-globe"></i> Visualizar Todos os Registros (Aprovados)</h2>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchAllInput" placeholder="Pesquisar em todos os registros por palavra-chave, título, categoria ou autor...">
+                </div>
+                <div id="allSolutionsContainer" class="solutions-grid-wide"></div>
+            </div>
+
+            <!-- VIEW 3: REVISÃO DE REGISTROS (ADMIN) -->
+            <div id="reviewRecordsView" class="list-section-full app-hidden">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-clipboard-check"></i> Fila de Revisão de Registros Pendentes</h2>
+                </div>
+                <p style="color: #64748b; margin-bottom: 20px;">Analise os itens enviados pela equipe. Ao clicar em "Autorizar", o registro passará a aparecer na Base Geral de todos.</p>
+                <div id="reviewSolutionsContainer" class="solutions-grid-wide"></div>
+            </div>
+
+            <!-- VIEW 4: GERENCIAMENTO E EXCLUSÃO (ADMIN) -->
+            <div id="deleteRecordsView" class="list-section-full app-hidden">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-trash-can"></i> Gerenciamento e Exclusão de Registros</h2>
+                </div>
+                <p style="color: #64748b; margin-bottom: 20px;">Painel administrativo para exclusão permanente de registros inadequados, duplicados ou desatualizados.</p>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchDeleteInput" placeholder="Pesquisar registros para gerenciamento...">
+                </div>
+                <div id="deleteSolutionsContainer" class="solutions-grid-wide"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MODAL DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div id="deleteModal" class="modal-overlay app-hidden">
+        <div class="modal-card animate-pop">
+            <div class="modal-icon-danger">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3>Confirmar Exclusão</h3>
+            <p>Você tem certeza absoluta que deseja excluir permanentemente este registro da base?</p>
+            <div class="modal-buttons">
+                <button id="btnCancelDelete" class="btn-secondary-action" style="flex: 1; justify-content: center;">Cancelar</button>
+                <button id="btnConfirmDelete" class="btn-primary btn-danger-theme" style="flex: 1;">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+<!-- Botão Flutuante para abrir o Assistente Gemini -->
+<button id="gemini-fab" onclick="toggleGeminiModal()" title="Assistente IA" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #4285F4; color: white; border: none; border-radius: 50px; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+    <i class="fa-solid fa-robot"></i>
+</button>
+
+<!-- Modal / Caixa de Diálogo do Assistente -->
+<div id="gemini-modal" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90vw; background: #ffffff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 9999; overflow: hidden; border: 1px solid #e0e0e0; font-family: sans-serif;">
+    <!-- Cabeçalho do Modal -->
+    <div style="background: #4285F4; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-sparkles"></i> Assistente Gemini
+        </span>
+        <button onclick="toggleGeminiModal()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <!-- Corpo do Chat / Resposta -->
+    <div id="gemini-chat-body" style="padding: 15px; height: 250px; overflow-y: auto; background: #f9f9f9; font-size: 14px; color: #333; display: flex; flex-direction: column; gap: 10px;">
+        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; align-self: flex-start; max-width: 85%;">
+            Olá! Sou o assistente de IA integrado ao seu sistema. Como posso te ajudar com alguma dúvida técnica ou pesquisa rápida hoje?
+        </div>
+    </div>
+
+    <!-- Rodapé com Input e Botão de Envio -->
+    <div style="padding: 10px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px;">
+        <input type="text" id="gemini-input" placeholder="Digite sua pergunta..." onkeypress="handleGeminiKeyPress(event)" style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; outline: none; font-size: 14px;" />
+        <button onclick="enviarPerguntaParaGemini()" style="background: #4285F4; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            <i class="fa-solid fa-paper-plane"></i>
+        </button>
+    </div>
+</div>
+    <script src="script.js"></script>
+</body>
+</html>
