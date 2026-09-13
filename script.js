@@ -23,6 +23,7 @@ const btnHubLogout = document.getElementById('btnHubLogout');
 // Painel Admin Hub
 const adminHubSection = document.getElementById('adminHubSection');
 const cardAdminReview = document.getElementById('cardAdminReview');
+const cardAdminTemplates = document.getElementById('cardAdminTemplates');
 const cardAdminDelete = document.getElementById('cardAdminDelete');
 
 // Carregamento
@@ -33,6 +34,7 @@ const btnEnterPlatform = document.getElementById('btnEnterPlatform');
 // Hub Buttons
 const cardMyRecords = document.getElementById('cardMyRecords');
 const cardAllRecords = document.getElementById('cardAllRecords');
+const cardViewTemplates = document.getElementById('cardViewTemplates'); // Novo botão universal para templates
 const btnBackToHub = document.getElementById('btnBackToHub');
 
 // Views internas
@@ -40,11 +42,12 @@ const myRecordsView = document.getElementById('myRecordsView');
 const allRecordsView = document.getElementById('allRecordsView');
 const reviewRecordsView = document.getElementById('reviewRecordsView');
 const deleteRecordsView = document.getElementById('deleteRecordsView');
+const chatTemplatesView = document.getElementById('chatTemplatesView');
 
 const viewTitleHeader = document.getElementById('viewTitleHeader');
 const viewSubtitleHeader = document.getElementById('viewSubtitleHeader');
 
-// Formulário e Listas
+// Formulário e Listas de Soluções
 const form = document.getElementById('solutionForm');
 const btnSubmitSolution = document.getElementById('btnSubmitSolution');
 const mySolutionsContainer = document.getElementById('mySolutionsContainer');
@@ -55,6 +58,12 @@ const deleteSolutionsContainer = document.getElementById('deleteSolutionsContain
 const searchMyInput = document.getElementById('searchMyInput');
 const searchAllInput = document.getElementById('searchAllInput');
 const searchDeleteInput = document.getElementById('searchDeleteInput');
+
+// Formulário e Lista de Templates de Chat (Apenas titulo e mensagem conforme solicitado)
+const templateForm = document.getElementById('templateForm');
+const btnSubmitTemplate = document.getElementById('btnSubmitTemplate');
+const templatesContainer = document.getElementById('templatesContainer');
+const searchTemplateInput = document.getElementById('searchTemplateInput');
 
 // Modal de Exclusão
 const deleteModal = document.getElementById('deleteModal');
@@ -77,7 +86,9 @@ const hubNotificationList = document.getElementById('hubNotificationList');
 
 const USER_KEY = 'kb_current_user';
 let allSolutionsCache = [];
+let allTemplatesCache = [];
 let pendingDeleteId = null;
+let pendingDeleteType = 'solution'; // 'solution' ou 'template'
 let lastSeenNotificationId = 0;
 
 // Inicializa o relógio em tempo real
@@ -233,12 +244,11 @@ loginForm.addEventListener('submit', (e) => {
 });
 
 btnEnterPlatform.addEventListener('click', () => {
-    const savedUser = localStorage.getItem(USER_KEY);
     loadingScreen.classList.add('fade-out');
     setTimeout(() => {
         if (loadingParticles) loadingParticles.stop();
         loadingScreen.classList.add('app-hidden');
-        showHub(savedUser);
+        showHub(localStorage.getItem(USER_KEY));
     }, 500);
 });
 
@@ -293,7 +303,6 @@ async function fetchNotifications() {
     const currentUser = localStorage.getItem(USER_KEY);
     if (!currentUser) return;
 
-    // Buscar último ID lido pelo usuário
     const { data: readData } = await supabaseClient
         .from('notification_reads')
         .select('last_seen_id')
@@ -302,7 +311,6 @@ async function fetchNotifications() {
 
     lastSeenNotificationId = readData ? readData.last_seen_id : 0;
 
-    // Buscar soluções aprovadas
     const { data: solutionsData, error } = await supabaseClient
         .from('solutions')
         .select('*')
@@ -320,11 +328,8 @@ async function fetchNotifications() {
 
 function updateNotificationUI() {
     const approvedList = allSolutionsCache.filter(item => item.status === 'approved');
-    
-    // Filtrar novos itens não visualizados pelo usuário
     const unreadItems = approvedList.filter(item => item.id > lastSeenNotificationId);
 
-    // Agrupar contagem por autor
     const authorCounts = {};
     approvedList.forEach(item => {
         const author = item.author || 'Equipe';
@@ -333,7 +338,6 @@ function updateNotificationUI() {
 
     const unreadCount = unreadItems.length;
 
-    // Atualizar Badges e ativar pulsação vermelha se houver novos registros
     if (unreadCount > 0) {
         notificationBadge.textContent = unreadCount;
         notificationBadge.classList.remove('app-hidden');
@@ -350,12 +354,10 @@ function updateNotificationUI() {
         if (btnHubNotificationBell) btnHubNotificationBell.classList.remove('pulse-alert');
     }
 
-    // Montar Conteúdo das Listas de Notificação
     let htmlContent = '';
     if (approvedList.length === 0) {
         htmlContent = `<div class="notification-empty">Nenhum registro aprovado ainda.</div>`;
     } else {
-        // Mostrar um resumo consolidado por autor na parte superior
         htmlContent += `<div class="notification-item" style="background: #f1f5f9; font-weight: 600; border-bottom: 2px solid #e2e8f0;">
             <i class="fa-solid fa-chart-pie" style="color: #0ea5e9;"></i> Resumo de inclusões aprovadas:
         </div>`;
@@ -371,12 +373,10 @@ function updateNotificationUI() {
     if (hubNotificationList) hubNotificationList.innerHTML = htmlContent;
 }
 
-// Eventos de clique nos sinos para marcar como lidas
 async function handleBellClick() {
     const currentUser = localStorage.getItem(USER_KEY);
     if (!currentUser || allSolutionsCache.length === 0) return;
 
-    // Alternar visibilidade dos dropdowns
     if (notificationDropdown) notificationDropdown.classList.toggle('app-hidden');
     if (hubNotificationDropdown) hubNotificationDropdown.classList.toggle('app-hidden');
 
@@ -390,7 +390,6 @@ async function handleBellClick() {
         if (btnNotificationBell) btnNotificationBell.classList.remove('pulse-alert');
         if (btnHubNotificationBell) btnHubNotificationBell.classList.remove('pulse-alert');
 
-        // Salvar na tabela de controle do Supabase
         await supabaseClient
             .from('notification_reads')
             .upsert([{ username: currentUser, last_seen_id: maxId, updated_at: new Date() }], { onConflict: 'username' });
@@ -403,7 +402,9 @@ if (btnHubNotificationBell) btnHubNotificationBell.addEventListener('click', han
 // --- NAVEGAÇÃO DO HUB PARA AS VIEWS ---
 cardMyRecords.addEventListener('click', () => transitionToView('my'));
 cardAllRecords.addEventListener('click', () => transitionToView('all'));
+if (cardViewTemplates) cardViewTemplates.addEventListener('click', () => transitionToView('templates')); // Suporte para qualquer perfil
 if (cardAdminReview) cardAdminReview.addEventListener('click', () => transitionToView('review'));
+if (cardAdminTemplates) cardAdminTemplates.addEventListener('click', () => transitionToView('templates'));
 if (cardAdminDelete) cardAdminDelete.addEventListener('click', () => transitionToView('delete'));
 
 function transitionToView(mode) {
@@ -422,6 +423,7 @@ function transitionToView(mode) {
         allRecordsView.classList.add('app-hidden');
         if (reviewRecordsView) reviewRecordsView.classList.add('app-hidden');
         if (deleteRecordsView) deleteRecordsView.classList.add('app-hidden');
+        if (chatTemplatesView) chatTemplatesView.classList.add('app-hidden');
 
         if (mode === 'my') {
             myRecordsView.classList.remove('app-hidden');
@@ -438,6 +440,11 @@ function transitionToView(mode) {
             viewTitleHeader.innerHTML = `<i class="fa-solid fa-clipboard-check"></i> Revisão Administrativa`;
             viewSubtitleHeader.textContent = `Autorização de novos registros`;
             loadSolutionsFromCloud('review');
+        } else if (mode === 'templates') {
+            chatTemplatesView.classList.remove('app-hidden');
+            viewTitleHeader.innerHTML = `<i class="fa-solid fa-comments"></i> Templates de Atendimento`;
+            viewSubtitleHeader.textContent = `Consulta e cópia de mensagens rápidas`; // Ajustado para refletir o acesso geral
+            loadTemplatesFromCloud();
         } else if (mode === 'delete') {
             deleteRecordsView.classList.remove('app-hidden');
             viewTitleHeader.innerHTML = `<i class="fa-solid fa-trash-can"></i> Gerenciamento e Exclusão`;
@@ -458,7 +465,7 @@ btnBackToHub.addEventListener('click', () => {
     }, 350);
 });
 
-// --- COMUNICAÇÃO COM O SUPABASE ---
+// --- COMUNICAÇÃO COM O SUPABASE (SOLUÇÕES) ---
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
 
@@ -489,6 +496,130 @@ form.addEventListener('submit', async function(e) {
     form.reset();
     loadSolutionsFromCloud('my');
 });
+
+// --- COMUNICAÇÃO COM O SUPABASE (TEMPLATES DE CHAT - APENAS TITULO E MENSAGEM) ---
+if (templateForm) {
+    templateForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const titulo = document.getElementById('templateTitle').value.trim();
+        const mensagem = document.getElementById('templateContent').value.trim();
+
+        if (!titulo || !mensagem) {
+            alert('Preencha o título e a mensagem do template.');
+            return;
+        }
+
+        btnSubmitTemplate.disabled = true;
+        btnSubmitTemplate.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Salvando template...`;
+
+        const { error } = await supabaseClient
+            .from('chat_templates')
+            .insert([{ titulo, mensagem }]);
+
+        btnSubmitTemplate.disabled = false;
+        btnSubmitTemplate.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Salvar Template`;
+
+        if (error) {
+            alert('Erro ao salvar template na nuvem: ' + error.message);
+            console.error(error);
+            return;
+        }
+
+        templateForm.reset();
+        loadTemplatesFromCloud();
+    });
+}
+
+async function loadTemplatesFromCloud() {
+    if (!templatesContainer) return;
+
+    templatesContainer.innerHTML = `
+        <div class="card" style="text-align: center; color: #64748b; padding: 30px; grid-column: 1 / -1;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size: 1.8rem; margin-bottom: 10px; color: #a855f7;"></i>
+            <p>Carregando templates de atendimento...</p>
+        </div>
+    `;
+
+    const { data, error } = await supabaseClient
+        .from('chat_templates')
+        .select('*')
+        .order('id', { ascending: false });
+
+    if (error) {
+        templatesContainer.innerHTML = `
+            <div class="card" style="text-align: center; color: #ef4444; padding: 30px; grid-column: 1 / -1;">
+                <i class="fa-solid fa-triangle-exclamation" style="font-size: 1.8rem; margin-bottom: 10px;"></i>
+                <p>Erro ao carregar templates. Verifique se a tabela 'chat_templates' foi criada no Supabase com os campos 'titulo' e 'mensagem'.</p>
+            </div>
+        `;
+        console.error(error);
+        return;
+    }
+
+    allTemplatesCache = data || [];
+    renderTemplates(allTemplatesCache);
+}
+
+function renderTemplates(list) {
+    if (!templatesContainer) return;
+    templatesContainer.innerHTML = '';
+
+    if (list.length === 0) {
+        templatesContainer.innerHTML = `
+            <div class="card" style="text-align: center; color: #64748b; padding: 40px; grid-column: 1 / -1;">
+                <i class="fa-solid fa-comments" style="font-size: 2rem; margin-bottom: 10px; color: #cbd5e1;"></i>
+                <p>Nenhum template de chat cadastrado ainda.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const currentUser = localStorage.getItem(USER_KEY);
+    const userIsAdmin = isAdmin(currentUser);
+
+    list.forEach(item => {
+        const card = document.createElement('div');
+        card.classList.add('solution-card');
+        card.style.borderLeftColor = '#a855f7';
+
+        // Botão de excluir só aparece para admin, botão de copiar aparece para todos[cite: 3]
+        let adminActionButtons = '';
+        if (userIsAdmin) {
+            adminActionButtons = `
+                <button onclick="openDeleteModal(${item.id}, 'template')" class="btn-primary btn-danger-theme" style="padding: 8px 12px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-trash-can"></i> Excluir
+                </button>
+            `;
+        }
+
+        card.innerHTML = `
+            <div class="card-header-info">
+                <h3>${escapeHtml(item.titulo)}</h3>
+            </div>
+            <p><strong>Mensagem / Template:</strong><br>${escapeHtml(item.mensagem).replace(/\n/g, '<br>')}</p>
+            <div class="card-admin-actions" style="display: flex; gap: 8px; margin-top: 15px;">
+                <button onclick="copyTemplateContent(${item.id})" class="btn-primary" style="background: #a855f7; padding: 8px 12px; font-size: 0.85rem; flex: 1;">
+                    <i class="fa-solid fa-copy"></i> Copiar Texto
+                </button>
+                ${adminActionButtons}
+            </div>
+        `;
+        templatesContainer.appendChild(card);
+    });
+}
+
+// Copiar conteúdo do template para a área de transferência
+window.copyTemplateContent = function(id) {
+    const item = allTemplatesCache.find(t => t.id === id);
+    if (!item) return;
+
+    navigator.clipboard.writeText(item.mensagem).then(() => {
+        alert('Template copiado para a área de transferência!');
+    }).catch(err => {
+        console.error('Erro ao copiar:', err);
+    });
+};
 
 async function loadSolutionsFromCloud(viewMode) {
     let targetContainer;
@@ -531,7 +662,7 @@ async function loadSolutionsFromCloud(viewMode) {
     else if (viewMode === 'delete') renderDeleteSolutions(allSolutionsCache);
 }
 
-// Renderizadores
+// Renderizadores de Soluções
 function renderMySolutions(list) {
     mySolutionsContainer.innerHTML = '';
     const currentUser = localStorage.getItem(USER_KEY);
@@ -671,7 +802,7 @@ function renderDeleteSolutions(list) {
                 <span>Por: <strong>${escapeHtml(item.author || 'Equipe')}</strong> | ${item.date || ''}</span>
             </div>
             <div class="card-admin-actions">
-                <button onclick="openDeleteModal(${item.id})" class="btn-primary btn-danger-theme" style="padding: 8px 12px; font-size: 0.85rem;">
+                <button onclick="openDeleteModal(${item.id}, 'solution')" class="btn-primary btn-danger-theme" style="padding: 8px 12px; font-size: 0.85rem;">
                     <i class="fa-solid fa-trash-can"></i> Excluir Registro
                 </button>
             </div>
@@ -695,9 +826,10 @@ window.authorizeSolution = async function(id) {
     loadSolutionsFromCloud('review');
 };
 
-// Funções do Modal de Exclusão
-window.openDeleteModal = function(id) {
+// Funções do Modal de Exclusão unificado (Soluções ou Templates)
+window.openDeleteModal = function(id, type = 'solution') {
     pendingDeleteId = id;
+    pendingDeleteType = type;
     deleteModal.classList.remove('app-hidden');
 };
 
@@ -709,19 +841,27 @@ btnCancelDelete.addEventListener('click', () => {
 btnConfirmDelete.addEventListener('click', async () => {
     if (!pendingDeleteId) return;
 
+    const tableName = pendingDeleteType === 'template' ? 'chat_templates' : 'solutions';
+
     const { error } = await supabaseClient
-        .from('solutions')
+        .from(tableName)
         .delete()
         .eq('id', pendingDeleteId);
 
     if (error) {
-        alert('Erro ao excluir registro: ' + error.message);
+        alert('Erro ao excluir item: ' + error.message);
         return;
     }
 
     deleteModal.classList.add('app-hidden');
+    const currentType = pendingDeleteType;
     pendingDeleteId = null;
-    loadSolutionsFromCloud('delete');
+    
+    if (currentType === 'template') {
+        loadTemplatesFromCloud();
+    } else {
+        loadSolutionsFromCloud('delete');
+    }
 });
 
 // Pesquisas Dinâmicas
@@ -752,6 +892,17 @@ searchDeleteInput.addEventListener('input', (e) => {
     renderDeleteSolutions(filtered);
 });
 
+if (searchTemplateInput) {
+    searchTemplateInput.addEventListener('input', (e) => {
+        const term = e.target.value.toLowerCase();
+        const filtered = allTemplatesCache.filter(item => 
+            (item.titulo && item.titulo.toLowerCase().includes(term)) || 
+            (item.mensagem && item.mensagem.toLowerCase().includes(term))
+        );
+        renderTemplates(filtered);
+    });
+}
+
 function escapeHtml(text) {
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text ? text.replace(/[&<>"']/g, m => map[m]) : '';
@@ -762,7 +913,6 @@ function escapeHtml(text) {
 // INTEGRAÇÃO DO CHAT ASSISTENTE GEMINI
 // ==========================================
 
-// Controla a abertura e fechamento da janela flutuante do Gemini
 function toggleGeminiModal() {
     const modal = document.getElementById('gemini-modal');
     if (!modal) return;
@@ -775,14 +925,12 @@ function toggleGeminiModal() {
     }
 }
 
-// Permite enviar a pergunta apertando a tecla "Enter"
 function handleGeminiKeyPress(event) {
     if (event.key === 'Enter') {
         enviarPerguntaParaGemini();
     }
 }
 
-// Função principal que envia a mensagem e interage com a Edge Function do Supabase
 async function enviarPerguntaParaGemini() {
     const input = document.getElementById('gemini-input');
     const chatBody = document.getElementById('gemini-chat-body');
@@ -791,7 +939,6 @@ async function enviarPerguntaParaGemini() {
     const pergunta = input.value.trim();
     if (!pergunta) return;
 
-    // 1. Exibe a mensagem do usuário na tela
     const userMsgDiv = document.createElement('div');
     userMsgDiv.className = 'gemini-msg-user';
     userMsgDiv.textContent = pergunta;
@@ -800,7 +947,6 @@ async function enviarPerguntaParaGemini() {
     input.value = '';
     chatBody.scrollTop = chatBody.scrollHeight;
 
-    // 2. Exibe o balão temporário de "Pensando..."
     const loadingId = 'loading-' + Date.now();
     const loadingDiv = document.createElement('div');
     loadingDiv.className = 'gemini-msg-loading';
@@ -810,7 +956,6 @@ async function enviarPerguntaParaGemini() {
     chatBody.scrollTop = chatBody.scrollHeight;
 
     try {
-        // 3. Chamada segura para a Edge Function do Supabase
         const { data, error } = await supabaseClient.functions.invoke('smart-handler', {
             body: { prompt: pergunta }
         });
@@ -822,7 +967,6 @@ async function enviarPerguntaParaGemini() {
 
         const respostaIA = (data && data.resposta) ? data.resposta : "Sem resposta detalhada da IA.";
 
-        // 4. Cria e exibe a resposta formatada da IA
         const botMsgDiv = document.createElement('div');
         botMsgDiv.className = 'gemini-msg-bot';
         botMsgDiv.innerHTML = formatarRespostaIA(respostaIA);
@@ -842,7 +986,6 @@ async function enviarPerguntaParaGemini() {
     chatBody.scrollTop = chatBody.scrollHeight;
 }
 
-// Formata quebras de linha com segurança para HTML
 function formatarRespostaIA(text) {
     const div = document.createElement('div');
     div.textContent = text;
