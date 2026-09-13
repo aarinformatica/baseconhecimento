@@ -2004,3 +2004,156 @@ h2 { font-size: 1.15rem; color: #0f172a; margin-bottom: 20px; padding-bottom: 10
 .gemini-send-btn:hover {
     background: #3367d6;
 }
+
+/* Correção definitiva para os cards de registros */
+.solutions-grid > div,
+.solutions-grid-wide > div,
+.solution-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%; 
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Protege os títulos */
+.solutions-grid > div h1,
+.solutions-grid > div h2,
+.solutions-grid > div h3,
+.solutions-grid-wide > div h1,
+.solutions-grid-wide > div h2,
+.solutions-grid-wide > div h3,
+.solution-card h3 {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  font-size: 1.1rem;
+  margin: 0;
+  max-width: 100%;
+}
+
+/* Exibe a categoria/tag perfeitamente na horizontal, sem quebrar letras */
+.solutions-grid > div .category,
+.solutions-grid > div .badge,
+.solutions-grid-wide > div .category,
+.solutions-grid-wide > div .badge,
+.solution-card .category,
+.solution-card .badge {
+  display: inline-block;
+  width: fit-content;
+  max-width: 100%;
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: normal;
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Mantém a quebra de linha estilo WhatsApp apenas nos textos longos/parágrafos */
+.solutions-grid > div p,
+.solutions-grid-wide > div p,
+.solution-card p {
+  margin: 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+/* Card 100% responsivo e fluido */
+.solutions-grid > div,
+.solutions-grid-wide > div,
+.solution-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%;
+  height: auto !important;
+  min-height: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  overflow: visible;
+}
+
+/* Título responsivo e completo */
+.solutions-grid > div h1,
+.solutions-grid > div h2,
+.solutions-grid > div h3,
+.solutions-grid-wide > div h1,
+.solutions-grid-wide > div h2,
+.solutions-grid-wide > div h3,
+.solution-card h3 {
+  word-break: normal !important;
+  overflow-wrap: break-word !important;
+  white-space: normal !important;
+  font-size: 1.1rem;
+  margin: 0;
+  width: 100%;
+  line-height: 1.4;
+}
+
+/* Categoria / Setor forçada a ficar na horizontal corretamente */
+.solutions-grid > div .category,
+.solutions-grid > div .badge,
+.solutions-grid-wide > div .category,
+.solutions-grid-wide > div .badge,
+.solution-card .category,
+.solution-card .badge {
+  display: inline-block;
+  width: max-content; /* Força a largura a se ajustar perfeitamente ao texto sem espremer */
+  max-width: 100%;
+  white-space: nowrap; /* Mantém o texto da categoria na mesma linha */
+  overflow: hidden;
+  text-overflow: ellipsis; /* Se for maior que o card, coloca reticências elegante */
+  font-size: 0.85rem;
+  padding: 4px 10px;
+  background: #f1f5f9;
+  border-radius: 6px;
+  color: #475569;
+  font-weight: 500;
+}
+
+/* Textos longos e parágrafos */
+.solutions-grid > div p,
+.solutions-grid-wide > div p,
+.solution-card p {
+  margin: 0;
+  width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  line-height: 1.5;
+}
+
+/* Estilização para o ícone e temas de templates (Roxo) */
+.template-accent {
+    background: rgba(168, 85, 247, 0.1);
+    color: #a855f7;
+}
+
+.btn-template-theme {
+    background-color: #a855f7 !important;
+}
+
+.btn-template-theme:hover {
+    background-color: #9333ea !important;
+}
+
+/* Ajuste para 3 colunas ou grid balanceada no hub caso necessário */
+@media (min-width: 768px) {
+    .hub-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
