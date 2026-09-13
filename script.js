@@ -811,7 +811,7 @@ async function enviarPerguntaParaGemini() {
 
     try {
         // 3. Chamada segura para a Edge Function do Supabase
-        const { data, error } = await supabaseClient.functions.invoke('consultar-ia', {
+        const { data, error } = await supabaseClient.functions.invoke('smart-handler', {
             body: { prompt: pergunta }
         });
 
