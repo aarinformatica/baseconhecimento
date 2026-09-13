@@ -89,9 +89,7 @@
                             <div class="notification-header">
                                 <span>Novas Soluções Aprovadas</span>
                             </div>
-                            <div id="hubNotificationList" class="notification-list">
-                                <!-- Itens injetados via JS -->
-                            </div>
+                            <div id="hubNotificationList" class="notification-list"></div>
                         </div>
                     </div>
                 </div>
@@ -116,9 +114,10 @@
 
             <div class="hub-title-center">
                 <h2>Escolha uma das opções abaixo para começar:</h2>
-                <p>Gerencie seus próprios cadastros ou pesquise na base completa compartilhada.</p>
+                <p>Gerencie seus próprios cadastros, consulte os templates de atendimento ou pesquise na base completa.</p>
             </div>
 
+            <!-- GRID PRINCIPAL (Visível para todos os perfis, incluindo o novo card de templates) -->
             <div class="hub-cards-grid">
                 <div class="hub-card" id="cardMyRecords">
                     <div class="hub-icon-wrapper left-accent">
@@ -127,6 +126,16 @@
                     <h3>Registros de Conhecimentos</h3>
                     <p>Cadastre novas soluções e gerencie exclusivamente os registros criados por você.</p>
                     <button class="btn-primary">Acessar Meus Registros <i class="fa-solid fa-arrow-right"></i></button>
+                </div>
+
+                <!-- NOVO CARD: Visível para todos os usuários -->
+                <div class="hub-card" id="cardViewTemplates">
+                    <div class="hub-icon-wrapper template-accent">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                    <h3>Templates de Atendimento</h3>
+                    <p>Consulte modelos de mensagens rápidas e templates padronizados para o chat da equipe.</p>
+                    <button class="btn-primary btn-template-theme">Ver Templates <i class="fa-solid fa-arrow-right"></i></button>
                 </div>
 
                 <div class="hub-card" id="cardAllRecords">
@@ -139,6 +148,7 @@
                 </div>
             </div>
 
+            <!-- SEÇÃO ADMINISTRATIVA (Restrita a administradores) -->
             <div id="adminHubSection" class="admin-hub-section app-hidden">
                 <div class="admin-hub-divider">
                     <span><i class="fa-solid fa-shield-halved"></i> Painel de Administração</span>
@@ -151,6 +161,15 @@
                         <h3>Revisão de Registros</h3>
                         <p>Verifique novos envios da equipe, certifique-se da ausência de dados de clientes e aprove-os.</p>
                         <button class="btn-primary btn-admin-theme">Revisar Pendentes <i class="fa-solid fa-arrow-right"></i></button>
+                    </div>
+
+                    <div class="hub-card admin-card-border" id="cardAdminTemplates">
+                        <div class="hub-icon-wrapper template-accent">
+                            <i class="fa-solid fa-file-pen"></i>
+                        </div>
+                        <h3>Cadastrar Templates</h3>
+                        <p>Crie, edite e gerencie novos modelos de mensagens rápidas para o chat da equipe.</p>
+                        <button class="btn-primary btn-template-theme">Gerenciar Templates <i class="fa-solid fa-arrow-right"></i></button>
                     </div>
 
                     <div class="hub-card admin-card-border" id="cardAdminDelete">
@@ -181,7 +200,6 @@
                         <h1 id="viewTitleHeader"><i class="fa-solid fa-book-bookmark"></i> Base de Conhecimento</h1>
                         <p id="viewSubtitleHeader">Gerenciamento de registros</p>
                     </div>
-                    <!-- Sino de Notificações nas Views Internas -->
                     <div class="notification-dropdown-container">
                         <button id="btnNotificationBell" class="notification-bell-btn" title="Notificações de Novos Registros">
                             <i class="fa-solid fa-bell"></i>
@@ -191,9 +209,7 @@
                             <div class="notification-header">
                                 <span>Novas Soluções Aprovadas</span>
                             </div>
-                            <div id="notificationList" class="notification-list">
-                                <!-- Itens injetados via JS -->
-                            </div>
+                            <div id="notificationList" class="notification-list"></div>
                         </div>
                     </div>
                 </div>
@@ -296,6 +312,40 @@
                 </div>
                 <div id="deleteSolutionsContainer" class="solutions-grid-wide"></div>
             </div>
+
+            <!-- VIEW 5: CADASTRO E GERENCIAMENTO DE TEMPLATES DE CHAT (ADMIN) -->
+            <div id="chatTemplatesView" class="list-section-full app-hidden">
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-comments"></i> Cadastro de Templates para Atendimento via Chat</h2>
+                </div>
+                <p style="color: #64748b; margin-bottom: 20px;">Crie respostas prontas e padronizadas para agilizar o suporte da equipe no atendimento.</p>
+                
+                <section class="card form-section" style="margin-bottom: 30px;">
+                    <h2><i class="fa-solid fa-circle-plus"></i> Novo Template</h2>
+                    <form id="templateForm">
+                        <div class="input-group">
+                            <label for="templateTitle">Título do Template (Atalho/Assunto)</label>
+                            <input type="text" id="templateTitle" placeholder="Ex: Saudação Inicial, Confirmação de Dados..." required>
+                        </div>
+                        <div class="input-group">
+                            <label for="templateContent">Mensagem / Corpo do Template</label>
+                            <textarea id="templateContent" rows="4" placeholder="Digite o texto padrão da mensagem..." required></textarea>
+                        </div>
+                        <button type="submit" id="btnSubmitTemplate" class="btn-primary btn-template-theme">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Template
+                        </button>
+                    </form>
+                </section>
+
+                <div class="list-header">
+                    <h2><i class="fa-solid fa-list-check"></i> Templates Cadastrados</h2>
+                </div>
+                <div class="search-box">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="searchTemplateInput" placeholder="Pesquisar nos templates cadastrados...">
+                </div>
+                <div id="templatesContainer" class="solutions-grid-wide"></div>
+            </div>
         </main>
     </div>
 
@@ -313,39 +363,34 @@
             </div>
         </div>
     </div>
-<!-- Botão Flutuante para abrir o Assistente Gemini -->
-<button id="gemini-fab" onclick="toggleGeminiModal()" title="Assistente IA" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #4285F4; color: white; border: none; border-radius: 50px; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
-    <i class="fa-solid fa-robot"></i>
-</button>
 
-<!-- Modal / Caixa de Diálogo do Assistente -->
-<div id="gemini-modal" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90vw; background: #ffffff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 9999; overflow: hidden; border: 1px solid #e0e0e0; font-family: sans-serif;">
-    <!-- Cabeçalho do Modal -->
-    <div style="background: #4285F4; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
-            <i class="fa-solid fa-sparkles"></i> Assistente GroqCloud
-        </span>
-        <button onclick="toggleGeminiModal()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-    </div>
+    <!-- Botão Flutuante para o Assistente -->
+    <button id="gemini-fab" onclick="toggleGeminiModal()" title="Assistente IA" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #4285F4; color: white; border: none; border-radius: 50px; width: 60px; height: 60px; font-size: 24px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; transition: transform 0.2s;">
+        <i class="fa-solid fa-robot"></i>
+    </button>
 
-    <!-- Corpo do Chat / Resposta -->
-    <div id="gemini-chat-body" style="padding: 15px; height: 250px; overflow-y: auto; background: #f9f9f9; font-size: 14px; color: #333; display: flex; flex-direction: column; gap: 10px;">
-        <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; align-self: flex-start; max-width: 85%;">
-            Olá! Sou o assistente de IA integrado ao seu sistema. Como posso te ajudar com alguma dúvida técnica ou pesquisa rápida hoje?
+    <div id="gemini-modal" style="display: none; position: fixed; bottom: 90px; right: 20px; width: 350px; max-width: 90vw; background: #ffffff; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); z-index: 9999; overflow: hidden; border: 1px solid #e0e0e0; font-family: sans-serif;">
+        <div style="background: #4285F4; color: white; padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: bold; display: flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-sparkles"></i> Assistente IA
+            </span>
+            <button onclick="toggleGeminiModal()" style="background: none; border: none; color: white; font-size: 16px; cursor: pointer;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div id="gemini-chat-body" style="padding: 15px; height: 250px; overflow-y: auto; background: #f9f9f9; font-size: 14px; color: #333; display: flex; flex-direction: column; gap: 10px;">
+            <div style="background: #e8f0fe; padding: 10px; border-radius: 8px; align-self: flex-start; max-width: 85%;">
+                Olá! Sou o assistente de IA integrado ao seu sistema. Como posso te ajudar com alguma dúvida técnica ou pesquisa rápida hoje?
+            </div>
+        </div>
+        <div style="padding: 10px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px;">
+            <input type="text" id="gemini-input" placeholder="Digite sua pergunta..." onkeypress="handleGeminiKeyPress(event)" style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; outline: none; font-size: 14px;" />
+            <button onclick="enviarPerguntaParaGemini()" style="background: #4285F4; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">
+                <i class="fa-solid fa-paper-plane"></i>
+            </button>
         </div>
     </div>
 
-    <!-- Rodapé com Input e Botão de Envio -->
-    <div style="padding: 10px; background: white; border-top: 1px solid #eee; display: flex; gap: 8px;">
-        <input type="text" id="gemini-input" placeholder="Digite sua pergunta..." onkeypress="handleGeminiKeyPress(event)" style="flex: 1; padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; outline: none; font-size: 14px;" />
-        <button onclick="enviarPerguntaParaGemini()" style="background: #4285F4; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer; font-weight: bold;">
-            <i class="fa-solid fa-paper-plane"></i>
-        </button>
-    </div>
-</div>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
